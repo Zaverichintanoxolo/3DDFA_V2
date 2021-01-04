@@ -4,13 +4,13 @@ __author__ = 'cleardusk'
 
 import sys
 
-sys.path.append('..')
+sys.path.append('../')
 
 import cv2
 import numpy as np
 
-from Sim3DR import RenderPipeline
-from utils.functions import plot_image
+from sim3dr.Sim3DR import RenderPipeline
+from sim3dr.utils.functions import plot_image
 from .tddfa_util import _to_ctype
 
 cfg = {
@@ -27,26 +27,13 @@ cfg = {
 render_app = RenderPipeline(**cfg)
 
 
-def render(img, ver_lst, tri, alpha=0.6, show_flag=False, wfp=None, with_bg_flag=True):
-    if with_bg_flag:
-        overlap = img.copy()
-    else:
-        overlap = np.zeros_like(img)
-
+def render(ver_lst, tri, wfp):
+    overlap = np.zeros((720, 1280, 3), dtype=np.uint8)
     for ver_ in ver_lst:
         ver = _to_ctype(ver_.T)  # transpose
-        overlap = render_app(ver, tri, overlap)
-
-    if with_bg_flag:
-        res = cv2.addWeighted(img, 1 - alpha, overlap, alpha, 0)
-    else:
-        res = overlap
-
+        res = render_app(ver, tri, overlap)
+        
     if wfp is not None:
         cv2.imwrite(wfp, res)
-        print(f'Save visualization result to {wfp}')
-
-    if show_flag:
-        plot_image(res)
-
+        
     return res
